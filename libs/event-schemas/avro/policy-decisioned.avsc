@@ -1,0 +1,65 @@
+{
+  "namespace": "com.monarch.events.policy",
+  "type": "record",
+  "name": "PolicyDecisioned",
+  "doc": "Emitted when the policy engine renders a decision on a subject (order, onboarding request, rebalancing proposal, or withdrawal). Captures the full audit trail including reason codes and evaluation details.",
+  "fields": [
+    {
+      "name": "header",
+      "type": "com.monarch.events.MonarchEventHeader",
+      "doc": "Standard Monarch event header."
+    },
+    {
+      "name": "decision_id",
+      "type": "string",
+      "doc": "Unique identifier for this policy decision."
+    },
+    {
+      "name": "policy_version_id",
+      "type": "string",
+      "doc": "Identifier of the policy version that was evaluated."
+    },
+    {
+      "name": "subject_type",
+      "type": {
+        "type": "enum",
+        "name": "PolicySubjectType",
+        "symbols": ["ORDER", "ONBOARDING", "REBALANCING", "WITHDRAWAL"],
+        "doc": "The type of entity being evaluated by the policy engine."
+      }
+    },
+    {
+      "name": "subject_id",
+      "type": "string",
+      "doc": "Identifier of the entity being evaluated (order_id, onboarding_id, etc.)."
+    },
+    {
+      "name": "client_id",
+      "type": "string",
+      "doc": "Identifier of the client associated with the subject."
+    },
+    {
+      "name": "decision",
+      "type": {
+        "type": "enum",
+        "name": "PolicyDecision",
+        "symbols": ["APPROVED", "REJECTED", "NEEDS_REVIEW"],
+        "doc": "The outcome of the policy evaluation."
+      }
+    },
+    {
+      "name": "reason_codes",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "doc": "Machine-readable codes explaining the decision (e.g. MARGIN_INSUFFICIENT, KYC_EXPIRED)."
+    },
+    {
+      "name": "details",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional JSON blob containing additional evaluation details, rule traces, or context."
+    }
+  ]
+}

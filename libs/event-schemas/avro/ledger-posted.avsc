@@ -1,0 +1,76 @@
+{
+  "namespace": "com.monarch.events.ledger",
+  "type": "record",
+  "name": "LedgerPosted",
+  "doc": "Emitted when a double-entry ledger posting is committed. Supports both cash and securities ledgers. Consumers include portfolio services, reporting pipelines, and reconciliation engines.",
+  "fields": [
+    {
+      "name": "header",
+      "type": "com.monarch.events.MonarchEventHeader",
+      "doc": "Standard Monarch event header."
+    },
+    {
+      "name": "ledger_type",
+      "type": {
+        "type": "enum",
+        "name": "LedgerType",
+        "symbols": ["CASH", "SECURITIES"],
+        "doc": "The type of ledger this entry belongs to."
+      }
+    },
+    {
+      "name": "entry_id",
+      "type": "string",
+      "doc": "Unique identifier for this ledger entry."
+    },
+    {
+      "name": "account_id",
+      "type": "string",
+      "doc": "Identifier of the ledger account affected."
+    },
+    {
+      "name": "client_id",
+      "type": "string",
+      "doc": "Identifier of the client who owns the account."
+    },
+    {
+      "name": "debit_amount",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Debit amount as a decimal string. Null when the entry is a pure credit."
+    },
+    {
+      "name": "credit_amount",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Credit amount as a decimal string. Null when the entry is a pure debit."
+    },
+    {
+      "name": "instrument_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Identifier of the financial instrument for securities ledger entries. Null for cash entries."
+    },
+    {
+      "name": "quantity",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Quantity of securities as a decimal string. Null for cash entries."
+    },
+    {
+      "name": "balance_after",
+      "type": "string",
+      "doc": "Account balance (cash or instrument quantity) after this posting, as a decimal string."
+    },
+    {
+      "name": "reference_type",
+      "type": "string",
+      "doc": "The domain entity that caused this posting. One of: ORDER, SETTLEMENT, FEE, CORPORATE_ACTION."
+    },
+    {
+      "name": "reference_id",
+      "type": "string",
+      "doc": "Identifier of the domain entity (order_id, settlement_id, etc.) that caused this posting."
+    }
+  ]
+}

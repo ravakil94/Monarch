@@ -1,0 +1,82 @@
+{
+  "namespace": "com.monarch.events.recon",
+  "type": "record",
+  "name": "ReconBreak",
+  "doc": "Emitted when the reconciliation engine detects a discrepancy between source and target systems. Tracks the full lifecycle of a break from detection through investigation to resolution or escalation.",
+  "fields": [
+    {
+      "name": "header",
+      "type": "com.monarch.events.MonarchEventHeader",
+      "doc": "Standard Monarch event header."
+    },
+    {
+      "name": "break_id",
+      "type": "string",
+      "doc": "Unique identifier for this reconciliation break."
+    },
+    {
+      "name": "break_type",
+      "type": {
+        "type": "enum",
+        "name": "BreakType",
+        "symbols": ["CASH", "HOLDINGS", "TRADE", "FEES", "CORPORATE_ACTION"],
+        "doc": "Category of the reconciliation break."
+      }
+    },
+    {
+      "name": "severity",
+      "type": {
+        "type": "enum",
+        "name": "BreakSeverity",
+        "symbols": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+        "doc": "Severity classification based on materiality thresholds and regulatory impact."
+      }
+    },
+    {
+      "name": "source_system",
+      "type": "string",
+      "doc": "The system of record being reconciled from (e.g. internal ledger)."
+    },
+    {
+      "name": "target_system",
+      "type": "string",
+      "doc": "The counterparty or external system being reconciled against (e.g. exchange, custodian)."
+    },
+    {
+      "name": "expected_value",
+      "type": "string",
+      "doc": "The value expected from the source system."
+    },
+    {
+      "name": "actual_value",
+      "type": "string",
+      "doc": "The value found in the target system."
+    },
+    {
+      "name": "difference",
+      "type": "string",
+      "doc": "The computed difference between expected and actual values."
+    },
+    {
+      "name": "client_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Identifier of the affected client, if the break is client-specific."
+    },
+    {
+      "name": "instrument_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Identifier of the affected instrument, if applicable."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "BreakStatus",
+        "symbols": ["CREATED", "ASSIGNED", "INVESTIGATING", "RESOLVED", "ESCALATED"],
+        "doc": "Current state of the reconciliation break investigation."
+      }
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+###############################################################################
+# Monarch Platform — Local Development Infrastructure
+# Usage: docker compose -f docker-compose.infra.yml up -d
+###############################################################################
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Primary relational store
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: monarch-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: monarch
+      POSTGRES_PASSWORD: monarch_dev
+      POSTGRES_DB: monarch_platform
+    volumes:
+      - monarch_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monarch -d monarch_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 — Caching / session store / pub-sub
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: monarch-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass monarch_dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "monarch_dev", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Apache Kafka 3.6 (KRaft mode — no Zookeeper)
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: monarch-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      # KRaft mode
+      KAFKA_ENABLE_KRAFT: "yes"
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9094
+
+      # Listeners
+      KAFKA_CFG_LISTENERS: EXTERNAL://:9092,INTERNAL://:9093,CONTROLLER://:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:9093
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      # Cluster
+      KAFKA_KRAFT_CLUSTER_ID: monarch-local-dev-cluster
+
+      # Allow plaintext
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    volumes:
+      - monarch_kafka_data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Confluent Schema Registry 7.6
+  # ---------------------------------------------------------------------------
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: monarch-schema-registry
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9093
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Keycloak 24 — Identity & access management (dev mode)
+  # ---------------------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: monarch-keycloak
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin_dev
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: monarch
+      KC_DB_PASSWORD: monarch_dev
+      KC_HEALTH_ENABLED: "true"
+    command: start-dev --import-realm
+    volumes:
+      - ./infrastructure/scripts/keycloak-realm.json:/opt/keycloak/data/import/monarch-realm.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # TimescaleDB — Time-series market data
+  # ---------------------------------------------------------------------------
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: monarch-timescaledb
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: monarch
+      POSTGRES_PASSWORD: monarch_dev
+      POSTGRES_DB: monarch_market_data
+    volumes:
+      - monarch_ts_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monarch -d monarch_market_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Neo4j 5 — Graph database for relationship modelling
+  # ---------------------------------------------------------------------------
+  neo4j:
+    image: neo4j:5-community
+    container_name: monarch-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/monarch_dev
+    volumes:
+      - monarch_neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p monarch_dev 'RETURN 1' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Kafka Topic Init — Creates all Monarch topics on startup
+  # ---------------------------------------------------------------------------
+  kafka-init:
+    image: bitnami/kafka:3.6
+    container_name: monarch-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Creating Monarch Kafka topics..."
+        TOPICS="kyc.status.changed policy.decisioned ips.approved ips.expired order.created order.validated order.submitted order.ack order.partial_fill order.filled order.cancelled order.rejected trade.executed trade.allocated settlement.completed settlement.failed ledger.cash.posted ledger.securities.posted recon.break.created recon.break.resolved portfolio.drift.detected rebalance.recommended rebalance.executed risk.alert.raised risk.alert.resolved ops.bod.completed ops.eod.completed"
+        for TOPIC in $$TOPICS; do
+          kafka-topics.sh --bootstrap-server kafka:9093 --create --if-not-exists --topic "$$TOPIC" --partitions 6 --replication-factor 1
+        done
+        echo "All topics created."
+    networks:
+      - monarch-network
+
+# =============================================================================
+# Named volumes
+# =============================================================================
+volumes:
+  monarch_pg_data:
+  monarch_kafka_data:
+  monarch_ts_data:
+  monarch_neo4j_data:
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  monarch-network:
+    driver: bridge

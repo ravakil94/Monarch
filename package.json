@@ -1,0 +1,23 @@
+{
+  "name": "@monarch/source",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/shared-types",
+    "libs/ui-kit",
+    "libs/api-client",
+    "services/node/*"
+  ],
+  "scripts": {
+    "build": "nx run-many --target=build",
+    "test": "nx run-many --target=test",
+    "lint": "nx run-many --target=lint",
+    "graph": "nx graph",
+    "affected": "nx affected"
+  },
+  "devDependencies": {
+    "nx": "22.5.1",
+    "typescript": "~5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

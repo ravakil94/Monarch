@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "monarch-common"
+version = "0.1.0"
+description = "Shared Python utilities for Monarch services"
+packages = [{include = "monarch_common"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+pydantic = "^2.5.0"
+uvicorn = "^0.27.0"
+confluent-kafka = "^2.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

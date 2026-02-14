@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "policy-decision-service"
+version = "0.1.0"
+description = "Central policy & rules engine for Monarch"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+uvicorn = "^0.27.0"
+pydantic = "^2.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

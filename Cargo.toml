@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = [
+    "services/rust/order-capture-service",
+    "libs/common-rust",
+]
+exclude = [
+    "services/rust/order-validation-service",
+    "services/rust/smart-order-router",
+    "services/rust/venue-adapter-nse",
+    "services/rust/venue-adapter-bse",
+    "services/rust/trade-processing-service",
+    "services/rust/prop-trading-engine",
+]
+
+[workspace.dependencies]
+actix-web = "4"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+rdkafka = { version = "0.36", features = ["cmake-build"] }

@@ -1,0 +1,194 @@
+###############################################################################
+# Monarch Platform — Full Local Stack (Infrastructure + Services)
+# Usage: docker compose up -d
+# Infra only: docker compose -f docker-compose.infra.yml up -d
+###############################################################################
+
+include:
+  - docker-compose.infra.yml
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # API Gateway (Fastify) — Port 8000
+  # ---------------------------------------------------------------------------
+  gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/node.Dockerfile
+      args:
+        SERVICE_DIR: apps/gateway
+    container_name: monarch-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      IDENTITY_SERVICE_URL: http://identity-service:8010
+      POLICY_SERVICE_URL: http://policy-decision-service:8011
+      LEDGER_SERVICE_URL: http://cash-ledger-service:8012
+      ORDER_SERVICE_URL: http://order-capture-service:8001
+    depends_on:
+      - identity-service
+      - policy-decision-service
+      - cash-ledger-service
+      - order-capture-service
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Java Services
+  # ---------------------------------------------------------------------------
+  identity-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/java.Dockerfile
+      args:
+        SERVICE_NAME: identity-service
+    container_name: monarch-identity-service
+    restart: unless-stopped
+    ports:
+      - "8010:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/monarch_platform
+      SPRING_DATASOURCE_USERNAME: monarch
+      SPRING_DATASOURCE_PASSWORD: monarch_dev
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      REDIS_HOST: redis
+      REDIS_PASSWORD: monarch_dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  cash-ledger-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/java.Dockerfile
+      args:
+        SERVICE_NAME: cash-ledger-service
+    container_name: monarch-cash-ledger-service
+    restart: unless-stopped
+    ports:
+      - "8012:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/monarch_platform
+      SPRING_DATASOURCE_USERNAME: monarch
+      SPRING_DATASOURCE_PASSWORD: monarch_dev
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Rust Services
+  # ---------------------------------------------------------------------------
+  order-capture-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/rust.Dockerfile
+      args:
+        SERVICE_NAME: order-capture-service
+    container_name: monarch-order-capture-service
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: "8001"
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Python Services
+  # ---------------------------------------------------------------------------
+  policy-decision-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/python.Dockerfile
+      args:
+        SERVICE_NAME: policy-decision-service
+    container_name: monarch-policy-decision-service
+    restart: unless-stopped
+    ports:
+      - "8011:8080"
+    environment:
+      DATABASE_URL: postgresql://monarch:monarch_dev@postgres:5432/monarch_platform
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  # ---------------------------------------------------------------------------
+  # Go Services
+  # ---------------------------------------------------------------------------
+  portfolio-engine-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/go.Dockerfile
+      args:
+        SERVICE_NAME: portfolio-engine-service
+    container_name: monarch-portfolio-engine-service
+    restart: unless-stopped
+    ports:
+      - "8020:8020"
+    environment:
+      PORT: "8020"
+      DATABASE_URL: postgresql://monarch:monarch_dev@postgres:5432/monarch_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  model-portfolio-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/go.Dockerfile
+      args:
+        SERVICE_NAME: model-portfolio-service
+    container_name: monarch-model-portfolio-service
+    restart: unless-stopped
+    ports:
+      - "8021:8021"
+    environment:
+      PORT: "8021"
+      DATABASE_URL: postgresql://monarch:monarch_dev@postgres:5432/monarch_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - monarch-network
+
+  rebalancing-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/go.Dockerfile
+      args:
+        SERVICE_NAME: rebalancing-service
+    container_name: monarch-rebalancing-service
+    restart: unless-stopped
+    ports:
+      - "8022:8022"
+    environment:
+      PORT: "8022"
+      DATABASE_URL: postgresql://monarch:monarch_dev@postgres:5432/monarch_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - monarch-network

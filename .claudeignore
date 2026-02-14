@@ -1,0 +1,37 @@
+# Dependencies & build artifacts
+node_modules/
+.nx/cache/
+.nx/workspace-data/
+target/
+build/
+dist/
+.gradle/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Heavy reference docs (read on demand, not auto-loaded)
+docs/reference/prd-full.md
+docs/reference/prd-focused.md
+docs/reference/platform-master-reference.md
+docs/reference/gap-analysis.md
+
+# Docker volumes & data
+infrastructure/docker/volumes/
+*.log
+
+# Generated files
+libs/api-client/generated/
+*.lock

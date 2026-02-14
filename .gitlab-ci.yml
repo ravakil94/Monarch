@@ -1,0 +1,79 @@
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+# --- Java Services ---
+java-lint:
+  stage: lint
+  image: eclipse-temurin:21-jdk
+  script:
+    - ./gradlew check --no-daemon || true
+  rules:
+    - changes:
+        - "services/java/**"
+        - "libs/common-java/**"
+        - "libs/db-migrations/**"
+
+java-build:
+  stage: build
+  image: eclipse-temurin:21-jdk
+  script:
+    - ./gradlew build --no-daemon
+  rules:
+    - changes:
+        - "services/java/**"
+        - "libs/common-java/**"
+
+# --- Rust Services ---
+rust-build:
+  stage: build
+  image: rust:1.93
+  script:
+    - cargo build --workspace
+    - cargo test --workspace
+  rules:
+    - changes:
+        - "services/rust/**"
+        - "libs/common-rust/**"
+        - "Cargo.toml"
+
+# --- Go Services ---
+go-build:
+  stage: build
+  image: golang:1.26
+  script:
+    - go build ./services/go/...
+    - go test ./services/go/...
+  rules:
+    - changes:
+        - "services/go/**"
+        - "libs/common-go/**"
+
+# --- Python Services ---
+python-lint:
+  stage: lint
+  image: python:3.14
+  script:
+    - pip install ruff
+    - ruff check services/python/
+  rules:
+    - changes:
+        - "services/python/**"
+        - "libs/common-python/**"
+
+# --- Node.js Services ---
+node-build:
+  stage: build
+  image: node:25
+  script:
+    - npm ci
+    - npx nx run-many --target=build --projects=gateway
+  rules:
+    - changes:
+        - "apps/gateway/**"
+        - "services/node/**"
+        - "libs/shared-types/**"

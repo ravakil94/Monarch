@@ -1,0 +1,17 @@
+server:
+  port: 8012
+
+spring:
+  application:
+    name: cash-ledger-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/monarch_platform
+    username: monarch
+    password: monarch_dev
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+logging:
+  level:
+    com.monarch: DEBUG

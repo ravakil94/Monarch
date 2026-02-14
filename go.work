@@ -1,0 +1,8 @@
+go 1.26
+
+use (
+	./services/go/portfolio-engine-service
+	./services/go/model-portfolio-service
+	./services/go/rebalancing-service
+	./libs/common-go
+)

@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@monarch/shared-types": ["libs/shared-types/src/index.ts"],
+      "@monarch/shared-types/*": ["libs/shared-types/src/*"],
+      "@monarch/ui-kit": ["libs/ui-kit/src/index.ts"],
+      "@monarch/ui-kit/*": ["libs/ui-kit/src/*"],
+      "@monarch/api-client": ["libs/api-client/src/index.ts"],
+      "@monarch/api-client/*": ["libs/api-client/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "build", ".next"]
+}

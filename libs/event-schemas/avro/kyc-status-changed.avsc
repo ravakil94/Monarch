@@ -1,0 +1,57 @@
+{
+  "namespace": "com.monarch.events.kyc",
+  "type": "record",
+  "name": "KycStatusChanged",
+  "doc": "Emitted whenever a client's KYC verification status transitions. Consumers include onboarding orchestrators, compliance dashboards, and account-activation workflows.",
+  "fields": [
+    {
+      "name": "header",
+      "type": "com.monarch.events.MonarchEventHeader",
+      "doc": "Standard Monarch event header."
+    },
+    {
+      "name": "client_id",
+      "type": "string",
+      "doc": "Unique identifier of the client whose KYC status changed."
+    },
+    {
+      "name": "kyc_type",
+      "type": {
+        "type": "enum",
+        "name": "KycType",
+        "symbols": ["EKYC", "VIDEO_KYC", "CKYC", "MANUAL"],
+        "doc": "The KYC verification method used."
+      }
+    },
+    {
+      "name": "previous_status",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "KycStatus",
+          "symbols": ["PENDING", "VERIFIED", "REJECTED", "EXPIRED"],
+          "doc": "Possible KYC verification statuses."
+        }
+      ],
+      "default": null,
+      "doc": "The status before this transition. Null for the initial KYC submission."
+    },
+    {
+      "name": "new_status",
+      "type": "KycStatus",
+      "doc": "The status after this transition."
+    },
+    {
+      "name": "kyc_id",
+      "type": "string",
+      "doc": "Unique identifier for this KYC verification attempt."
+    },
+    {
+      "name": "reason",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Human-readable reason for the status change, particularly useful for rejections and expirations."
+    }
+  ]
+}

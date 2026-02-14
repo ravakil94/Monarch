@@ -1,0 +1,43 @@
+{
+  "namespace": "com.monarch.events",
+  "type": "record",
+  "name": "MonarchEventHeader",
+  "doc": "Common header included in all Monarch platform events. Provides traceability, multi-tenancy context, and causal lineage for every message on the event bus.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique identifier for this event (UUID v4)."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Fully-qualified event type name, e.g. 'com.monarch.events.order.OrderEvent'."
+    },
+    {
+      "name": "tenant_id",
+      "type": "string",
+      "doc": "Identifier of the tenant (wealth-management firm) that owns this event."
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Epoch milliseconds when the event was produced."
+    },
+    {
+      "name": "correlation_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional correlation identifier used to group related events across services."
+    },
+    {
+      "name": "caused_by",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "The event_id of the upstream event that triggered this event, enabling causal lineage tracking."
+    }
+  ]
+}

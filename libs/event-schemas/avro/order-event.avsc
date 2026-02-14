@@ -1,0 +1,113 @@
+{
+  "namespace": "com.monarch.events.order",
+  "type": "record",
+  "name": "OrderEvent",
+  "doc": "Captures every state transition in the order lifecycle -- from creation through validation, exchange acknowledgement, fills, and terminal states. Decimal monetary and quantity values are represented as strings to preserve arbitrary precision.",
+  "fields": [
+    {
+      "name": "header",
+      "type": "com.monarch.events.MonarchEventHeader",
+      "doc": "Standard Monarch event header."
+    },
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Unique identifier for the order."
+    },
+    {
+      "name": "client_id",
+      "type": "string",
+      "doc": "Identifier of the client who owns this order."
+    },
+    {
+      "name": "instrument_id",
+      "type": "string",
+      "doc": "Identifier of the financial instrument being traded (e.g. ISIN, internal symbol key)."
+    },
+    {
+      "name": "exchange",
+      "type": "string",
+      "doc": "Target exchange or venue for the order (e.g. NSE, BSE)."
+    },
+    {
+      "name": "product_type",
+      "type": "string",
+      "doc": "Product classification (e.g. CNC, MIS, NRML)."
+    },
+    {
+      "name": "order_type",
+      "type": {
+        "type": "enum",
+        "name": "OrderType",
+        "symbols": ["MARKET", "LIMIT", "SL", "SL_M"],
+        "doc": "Order pricing strategy."
+      }
+    },
+    {
+      "name": "side",
+      "type": {
+        "type": "enum",
+        "name": "OrderSide",
+        "symbols": ["BUY", "SELL"],
+        "doc": "Direction of the trade."
+      }
+    },
+    {
+      "name": "quantity",
+      "type": "string",
+      "doc": "Order quantity as a decimal string to preserve precision."
+    },
+    {
+      "name": "price",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Limit price as a decimal string. Null for market orders."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "OrderStatus",
+        "symbols": [
+          "CREATED",
+          "VALIDATED",
+          "SUBMITTED",
+          "ACK",
+          "PARTIAL_FILL",
+          "FILLED",
+          "CANCELLED",
+          "REJECTED"
+        ],
+        "doc": "Current state in the order lifecycle."
+      }
+    },
+    {
+      "name": "filled_quantity",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Cumulative filled quantity as a decimal string."
+    },
+    {
+      "name": "average_fill_price",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Volume-weighted average fill price as a decimal string."
+    },
+    {
+      "name": "validation_errors",
+      "type": ["null", {"type": "array", "items": "string"}],
+      "default": null,
+      "doc": "List of validation error messages when the order is rejected at the validation stage."
+    },
+    {
+      "name": "placed_by",
+      "type": "string",
+      "doc": "Identifier of the user or system principal that placed the order."
+    },
+    {
+      "name": "placed_via",
+      "type": "string",
+      "doc": "Channel through which the order was placed (e.g. WEB, MOBILE, API, ALGO)."
+    }
+  ]
+}

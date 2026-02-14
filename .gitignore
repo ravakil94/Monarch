@@ -7,17 +7,58 @@ vendor/
 .env.local
 .env.*.local
 
-# Build
+# Nx
+.nx/installation
+.nx/cache
+.nx/workspace-data
+
+# Build outputs
 dist/
 build/
 .next/
 out/
+target/
+
+# Java / Gradle
+.gradle/
+services/java/**/build/
+libs/common-java/build/
+libs/db-migrations/build/
+*.class
+*.jar
+*.war
+
+# Rust
+services/rust/**/target/
+libs/common-rust/target/
+Cargo.lock
+
+# Go
+services/go/**/bin/
+libs/common-go/bin/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+.eggs/
+*.egg
+
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.iml
 
 # OS
 .DS_Store
@@ -27,6 +68,21 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Misc
+# Security
 *.pem
+*.key
+*.p12
+
+# Coverage & Testing
 coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+*.bak
+*.tmp

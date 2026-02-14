@@ -1,0 +1,20 @@
+{
+  "name": "@monarch/event-schemas",
+  "version": "1.0.0",
+  "description": "Avro event schema definitions for the Monarch wealth management platform's Kafka event-driven architecture.",
+  "license": "UNLICENSED",
+  "private": true,
+  "files": [
+    "avro/**/*.avsc"
+  ],
+  "scripts": {
+    "validate": "echo 'Schema validation not yet configured — integrate avro-tools or @avro/avsc for compile-time checks.'"
+  },
+  "keywords": [
+    "avro",
+    "kafka",
+    "event-schemas",
+    "monarch",
+    "wealth-management"
+  ]
+}
