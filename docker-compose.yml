@@ -53,7 +53,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/monarch_platform
       SPRING_DATASOURCE_USERNAME: monarch
       SPRING_DATASOURCE_PASSWORD: monarch_dev
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PASSWORD: monarch_dev
     depends_on:
@@ -78,7 +78,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/monarch_platform
       SPRING_DATASOURCE_USERNAME: monarch
       SPRING_DATASOURCE_PASSWORD: monarch_dev
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,7 +102,7 @@ services:
       - "8001:8001"
     environment:
       PORT: "8001"
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       kafka:
         condition: service_healthy
@@ -124,7 +124,7 @@ services:
       - "8011:8080"
     environment:
       DATABASE_URL: postgresql://monarch:monarch_dev@postgres:5432/monarch_platform
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       postgres:
         condition: service_healthy
